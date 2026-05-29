@@ -238,9 +238,12 @@
         <li><a href="#requisitos">Requisitos</a></li>
         <li><a href="#instalacion">Instalacion y primer arranque</a></li>
         <li><a href="#ejecucion">Ejecutar la simulacion</a></li>
+        <li><a href="#llegadas">Como se simulan las llegadas</a></li>
+        <li><a href="#modificar">Modificar el comportamiento</a></li>
         <li><a href="#vista">Usar la vista web</a></li>
         <li><a href="#graficas">Interpretar las graficas</a></li>
         <li><a href="#parametros">Parametros principales</a></li>
+        <li><a href="#cumplimiento">Revision de requerimientos</a></li>
         <li><a href="#errores">Solucion de problemas</a></li>
         <li><a href="#subida">Subir el proyecto a Git</a></li>
       </ol>
@@ -289,8 +292,32 @@
         <p class="note">La ejecucion genera imagenes PNG y un archivo CSV con los resultados de sensibilidad.</p>
       </section>
 
+      <section id="llegadas">
+        <h2>4. Como se simulan las llegadas</h2>
+        <p>Las llegadas se modelan como un proceso de Poisson, que es el supuesto de entrada del modelo M/M/c. En el codigo no se crean clientes en intervalos fijos; se sortea aleatoriamente el tiempo entre una llegada y la siguiente.</p>
+        <code>tasa_llegada_minuto = lambda_hora / 60.0
+tiempo_entre_llegadas = rng.expovariate(tasa_llegada_minuto)
+yield env.timeout(tiempo_entre_llegadas)</code>
+        <p>Cuando el reloj de SimPy avanza ese tiempo, se crea un cliente con ID, tipo de solicitud, prioridad y tiempo exacto de llegada. Despues el cliente solicita un tecnico; si todos estan ocupados, queda en cola hasta iniciar atencion.</p>
+        <p>La segunda distribucion exponencial se usa para la duracion del servicio:</p>
+        <code>tiempo_servicio = rng.expovariate(mu_hora / 60.0)</code>
+        <p>La evidencia queda guardada en <strong>llegadas_clientes.csv</strong>. Ese archivo muestra cliente por cliente el tiempo de llegada, el tiempo entre llegadas, inicio de atencion, fin de atencion y tiempo de espera.</p>
+      </section>
+
+      <section id="modificar">
+        <h2>5. Modificar el comportamiento</h2>
+        <p>El comportamiento de la simulacion se modifica desde la terminal cambiando los parametros de entrada. Por ejemplo, si aumenta <strong>--lambda-llegadas</strong>, entran mas clientes por hora; si aumenta <strong>--servidores</strong>, hay mas tecnicos atendiendo en paralelo.</p>
+        <code>py main.py --lambda-llegadas 12 --servidores 4 --replicas 50</code>
+        <p>Otros ejemplos:</p>
+        <code>py main.py --lambda-llegadas 8
+py main.py --mu-servicio 5 --tiempo 600 --warmup 60
+py main.py --lambdas-sensibilidad 8,10,12,14 --c-min 2 --c-max 8
+py main.py --umbral-wq 8</code>
+        <p class="note">Si la configuracion no cumple rho = lambda/(c*mu) &lt; 1, el programa la rechaza porque el sistema seria inestable.</p>
+      </section>
+
       <section id="vista">
-        <h2>4. Usar la vista web</h2>
+        <h2>6. Usar la vista web</h2>
         <p>Abre la pagina local de resultados:</p>
         <code>vista_resultados.html</code>
         <p>Desde esa vista puedes revisar las graficas y entrar a este manual usando el boton superior.</p>
@@ -298,7 +325,7 @@
       </section>
 
       <section id="graficas">
-        <h2>5. Interpretar las graficas</h2>
+        <h2>7. Interpretar las graficas</h2>
         <h3>Evolucion del sistema</h3>
         <p>Muestra como cambia el numero de clientes en el sistema y en cola durante el tiempo simulado.</p>
 
@@ -316,18 +343,38 @@
       </section>
 
       <section id="parametros">
-        <h2>6. Parametros principales</h2>
+        <h2>8. Parametros principales</h2>
         <ul>
           <li><strong>--lambda-llegadas:</strong> clientes que llegan por hora.</li>
           <li><strong>--mu-servicio:</strong> clientes atendidos por hora por cada tecnico.</li>
           <li><strong>--servidores:</strong> cantidad de tecnicos disponibles.</li>
+          <li><strong>--tiempo:</strong> duracion de la jornada simulada en minutos.</li>
+          <li><strong>--warmup:</strong> periodo inicial descartado para calcular metricas.</li>
           <li><strong>--replicas:</strong> cantidad de repeticiones Montecarlo.</li>
+          <li><strong>--lambdas-sensibilidad:</strong> tasas de llegada evaluadas en el analisis de sensibilidad.</li>
+          <li><strong>--c-min y --c-max:</strong> rango de tecnicos evaluado.</li>
+          <li><strong>--umbral-wq:</strong> meta de espera para recomendar tecnicos.</li>
           <li><strong>--salida:</strong> carpeta donde se guardan los resultados.</li>
         </ul>
       </section>
 
+      <section id="cumplimiento">
+        <h2>9. Revision de requerimientos</h2>
+        <ul>
+          <li><strong>Generacion de llegadas:</strong> implementada en <strong>simulacion_des.py</strong> con <strong>rng.expovariate(lambda_hora / 60)</strong>.</li>
+          <li><strong>Cliente con atributos:</strong> implementado en <strong>cliente.py</strong> con ID, tipo, prioridad y tiempos de llegada/atencion.</li>
+          <li><strong>DES con SimPy:</strong> usa <strong>simpy.Environment</strong> y <strong>simpy.Resource</strong>.</li>
+          <li><strong>Montecarlo:</strong> <strong>montecarlo.py</strong> ejecuta replicas independientes con semillas distintas.</li>
+          <li><strong>Intervalos de confianza y replicas minimas:</strong> se calculan en <strong>_resumir_valores</strong> y se imprimen en consola.</li>
+          <li><strong>Validacion analitica:</strong> <strong>analitico.py</strong> calcula las metricas M/M/c y el error relativo.</li>
+          <li><strong>Sensibilidad:</strong> <strong>sensibilidad.py</strong> varia lambda y numero de tecnicos.</li>
+          <li><strong>Graficas:</strong> <strong>visualizacion.py</strong> genera evolucion temporal, histograma, Wq vs tecnicos, rho vs lambda, distribucion de Wq y heatmap.</li>
+          <li><strong>Recomendacion:</strong> el programa reporta el minimo numero de tecnicos que cumple el umbral de Wq.</li>
+        </ul>
+      </section>
+
       <section id="errores">
-        <h2>7. Solucion de problemas</h2>
+        <h2>10. Solucion de problemas</h2>
         <h3>No aparecen las graficas</h3>
         <p>Ejecuta nuevamente la simulacion y verifica que exista la carpeta <strong>resultados_prueba_terminal</strong>.</p>
 
@@ -340,7 +387,7 @@
       </section>
 
       <section id="subida">
-        <h2>8. Subir el proyecto a Git</h2>
+        <h2>11. Subir el proyecto a Git</h2>
         <p>Despues de crear el repositorio remoto, agrega los archivos y realiza el commit:</p>
         <code>git add .
 git commit -m "Agregar simulacion TechClassUC"</code>

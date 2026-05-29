@@ -1,0 +1,57 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+test:
+  image: python:3.12-slim
+  stage: test
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - python -m compileall main.py simulacion_des.py montecarlo.py sensibilidad.py analitico.py visualizacion.py cliente.py servidor.py src/app.py
+    - python main.py --replicas 2 --replicas-sensibilidad 1 --tiempo 120 --warmup 10 --salida resultados_ci
+  artifacts:
+    when: always
+    paths:
+      - resultados_ci/
+    expire_in: 1 week
+
+build_assets:
+  image: python:3.12-slim
+  stage: build
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - python main.py --salida assets
+  artifacts:
+    paths:
+      - assets/
+    expire_in: 1 week
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+deploy_render:
+  image: alpine:3.20
+  stage: deploy
+  needs:
+    - test
+    - build_assets
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - test -n "$RENDER_DEPLOY_HOOK"
+    - curl -fsS -X POST "$RENDER_DEPLOY_HOOK"
+  environment:
+    name: production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $RENDER_DEPLOY_HOOK'

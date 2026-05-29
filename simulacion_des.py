@@ -23,6 +23,8 @@ class ResultadoReplica:
     parametros: dict
     metricas: dict
     clientes_atendidos: list[Cliente]
+    clientes_generados: list[Cliente]
+    llegadas_generadas: list[dict]
     serie_tiempo: list[dict]
     tiempos_espera: list[float]
     tiempos_sistema: list[float]
@@ -127,17 +129,32 @@ def _generar_llegadas(
     mu_hora: float,
     tiempo_simulacion: float,
     clientes_registrados: list[Cliente],
+    clientes_generados: list[Cliente],
+    llegadas_generadas: list[dict],
 ) -> simpy.events.Event:
     id_cliente = 0
     tasa_llegada_minuto = lambda_hora / 60.0
+    llegada_anterior = 0.0
 
     while True:
-        yield env.timeout(rng.expovariate(tasa_llegada_minuto))
+        tiempo_entre_llegadas = rng.expovariate(tasa_llegada_minuto)
+        yield env.timeout(tiempo_entre_llegadas)
         if env.now > tiempo_simulacion:
             break
 
         id_cliente += 1
         cliente = _crear_cliente(id_cliente, float(env.now), rng)
+        clientes_generados.append(cliente)
+        llegadas_generadas.append(
+            {
+                "id_cliente": cliente.id_cliente,
+                "tiempo_llegada": cliente.tiempo_llegada,
+                "tiempo_entre_llegadas": cliente.tiempo_llegada - llegada_anterior,
+                "tipo_solicitud": cliente.tipo_solicitud,
+                "prioridad": cliente.prioridad,
+            }
+        )
+        llegada_anterior = cliente.tiempo_llegada
         monitor.clientes_en_sistema += 1
         monitor.registrar_estado(recurso)
         env.process(
@@ -184,6 +201,8 @@ def correr_una_replica(
     recurso = crear_recurso_tecnicos(env, configuracion)
     monitor = MonitorSistema(env, tiempo_simulacion, warmup)
     clientes_registrados: list[Cliente] = []
+    clientes_generados: list[Cliente] = []
+    llegadas_generadas: list[dict] = []
 
     env.process(
         _generar_llegadas(
@@ -195,6 +214,8 @@ def correr_una_replica(
             mu_hora,
             tiempo_simulacion,
             clientes_registrados,
+            clientes_generados,
+            llegadas_generadas,
         )
     )
     env.run()
@@ -216,24 +237,22 @@ def correr_una_replica(
         "Lq": monitor.area_cola / duracion_observada,
         "L": monitor.area_sistema / duracion_observada,
         "rho": monitor.area_ocupados / (servidores * duracion_observada),
-        "rho_teorico": rho_teorico,
         "cola_maxima": monitor.max_cola,
-        "throughput_hora": len(clientes_registrados) / duracion_observada * 60.0,
-    }
-
-    parametros = {
-        "lambda_hora": lambda_hora,
-        "mu_hora": mu_hora,
-        "servidores": servidores,
-        "tiempo_simulacion": tiempo_simulacion,
-        "warmup": warmup,
-        "semilla": semilla,
+        "throughput_hora": (len(clientes_registrados) / duracion_observada) * 60.0,
     }
 
     return ResultadoReplica(
-        parametros=parametros,
+        parametros={
+            "lambda_hora": lambda_hora,
+            "mu_hora": mu_hora,
+            "servidores": servidores,
+            "tiempo_simulacion": tiempo_simulacion,
+            "warmup": warmup,
+        },
         metricas=metricas,
         clientes_atendidos=clientes_registrados,
+        clientes_generados=clientes_generados,
+        llegadas_generadas=llegadas_generadas,
         serie_tiempo=monitor.serie_tiempo,
         tiempos_espera=tiempos_espera,
         tiempos_sistema=tiempos_sistema,
