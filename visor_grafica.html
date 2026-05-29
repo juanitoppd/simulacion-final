@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visor de grafica - TechClassUC</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #637083;
+      --line: #d8dee8;
+      --accent: #0f766e;
+      --accent-soft: #d9f3ef;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(rgba(5, 9, 16, 0.42), rgba(5, 9, 16, 0.5)),
+        url("Luffy.jpeg");
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: var(--text);
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.62);
+      border-bottom: 1px solid var(--line);
+      padding: 18px clamp(16px, 4vw, 48px);
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(22px, 4vw, 34px);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .button-link.secondary {
+      background: var(--panel);
+      color: var(--accent);
+    }
+
+    .button-link:hover {
+      text-decoration: none;
+    }
+
+    .control-button {
+      min-height: 40px;
+      padding: 9px 12px;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: var(--accent);
+      color: #ffffff;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .control-button.secondary {
+      background: #ffffff;
+      color: var(--accent);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto 42px;
+    }
+
+    .viewer {
+      background: rgba(255, 255, 255, 0.34);
+      border: 1px solid rgba(255, 255, 255, 0.64);
+      border-radius: 8px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .viewer img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .description {
+      padding: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.64);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.64);
+      background: rgba(255, 255, 255, 0.36);
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .selector {
+      margin-top: 18px;
+      background: rgba(255, 255, 255, 0.36);
+      border: 1px solid rgba(255, 255, 255, 0.64);
+      border-radius: 8px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .selector h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .graph-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+
+    .graph-list a {
+      display: block;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.68);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.5);
+      color: var(--text);
+    }
+
+    .graph-list a.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1 id="titulo">Grafica de simulacion</h1>
+        <p id="subtitulo">Resultado generado por el programa.</p>
+      </div>
+      <nav class="actions" aria-label="Navegacion">
+        <a class="button-link" href="vista_resultados.html">Volver a graficas</a>
+        <a class="button-link secondary" href="manual_usuario.html">Manual</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="viewer" aria-label="Grafica seleccionada">
+      <img id="imagen" src="resultados_prueba_terminal/evolucion_sistema.png" alt="Grafica seleccionada">
+      <div class="description" id="descripcion">
+        Muestra como cambia el numero de clientes en el sistema y en cola durante el tiempo simulado.
+      </div>
+      <div class="controls" aria-label="Controles del carrusel">
+        <button class="control-button secondary" type="button" id="anterior">Anterior</button>
+        <button class="control-button" type="button" id="reproducir">Pausar automatico</button>
+        <button class="control-button secondary" type="button" id="siguiente">Siguiente</button>
+        <span class="status" id="estadoAuto">Cambio automatico activo</span>
+      </div>
+    </section>
+
+    <section class="selector" aria-label="Seleccionar otra grafica">
+      <h2>Abrir otra grafica</h2>
+      <div class="graph-list" id="listaGraficas"></div>
+    </section>
+  </main>
+
+  <script>
+    const graficas = {
+      evolucion: {
+        titulo: "Evolucion del sistema",
+        subtitulo: "Clientes en sistema y clientes en cola durante la simulacion.",
+        imagen: "resultados_prueba_terminal/evolucion_sistema.png",
+        descripcion: "Muestra como cambia el numero de clientes en el sistema y en cola durante el tiempo simulado."
+      },
+      histograma: {
+        titulo: "Histograma de esperas",
+        subtitulo: "Distribucion de tiempos de espera Wq.",
+        imagen: "resultados_prueba_terminal/histograma_esperas.png",
+        descripcion: "Resume la frecuencia de los tiempos de espera antes de recibir atencion."
+      },
+      wq: {
+        titulo: "Wq vs tecnicos",
+        subtitulo: "Tiempo promedio de espera segun la cantidad de tecnicos.",
+        imagen: "resultados_prueba_terminal/wq_vs_servidores.png",
+        descripcion: "Compara el tiempo promedio de espera al cambiar la cantidad de tecnicos disponibles."
+      },
+      rho: {
+        titulo: "Rho vs lambda",
+        subtitulo: "Factor de utilizacion frente a la tasa de llegada.",
+        imagen: "resultados_prueba_terminal/rho_vs_lambda.png",
+        descripcion: "Permite revisar el nivel de utilizacion del sistema frente a distintas tasas de llegada."
+      },
+      distribucion: {
+        titulo: "Distribucion Wq",
+        subtitulo: "Variacion de las medias de Wq entre replicas.",
+        imagen: "resultados_prueba_terminal/distribucion_medias_wq.png",
+        descripcion: "Muestra como se distribuyen las medias del tiempo de espera entre las replicas Montecarlo."
+      },
+      heatmap: {
+        titulo: "Heatmap Wq",
+        subtitulo: "Mapa de espera por lambda y numero de tecnicos.",
+        imagen: "resultados_prueba_terminal/heatmap_wq.png",
+        descripcion: "Ayuda a identificar combinaciones de tasa de llegada y numero de tecnicos con menor espera."
+      }
+    };
+
+    const ids = Object.keys(graficas);
+    const params = new URLSearchParams(window.location.search);
+    let clave = graficas[params.get("grafica")] ? params.get("grafica") : "evolucion";
+    let automaticoActivo = true;
+    let intervalo = null;
+    const lista = document.getElementById("listaGraficas");
+
+    Object.entries(graficas).forEach(([id, grafica]) => {
+      const enlace = document.createElement("a");
+      enlace.href = "visor_grafica.html?grafica=" + id;
+      enlace.textContent = grafica.titulo;
+      enlace.dataset.grafica = id;
+      enlace.addEventListener("click", (event) => {
+        event.preventDefault();
+        mostrarGrafica(id);
+      });
+      lista.appendChild(enlace);
+    });
+
+    function mostrarGrafica(id, actualizarUrl = true) {
+      clave = graficas[id] ? id : "evolucion";
+      const seleccionada = graficas[clave];
+      document.title = seleccionada.titulo + " - TechClassUC";
+      document.getElementById("titulo").textContent = seleccionada.titulo;
+      document.getElementById("subtitulo").textContent = seleccionada.subtitulo;
+      document.getElementById("imagen").src = seleccionada.imagen;
+      document.getElementById("imagen").alt = seleccionada.titulo;
+      document.getElementById("descripcion").textContent = seleccionada.descripcion;
+
+      document.querySelectorAll(".graph-list a").forEach((enlace) => {
+        enlace.classList.toggle("active", enlace.dataset.grafica === clave);
+      });
+
+      if (actualizarUrl) {
+        const nuevaUrl = "visor_grafica.html?grafica=" + clave;
+        window.history.replaceState(null, "", nuevaUrl);
+      }
+    }
+
+    function cambiarGrafica(paso) {
+      const indiceActual = ids.indexOf(clave);
+      const nuevoIndice = (indiceActual + paso + ids.length) % ids.length;
+      mostrarGrafica(ids[nuevoIndice]);
+    }
+
+    function iniciarAutomatico() {
+      detenerAutomatico();
+      intervalo = window.setInterval(() => cambiarGrafica(1), 4500);
+    }
+
+    function detenerAutomatico() {
+      if (intervalo) {
+        window.clearInterval(intervalo);
+      }
+    }
+
+    function actualizarEstadoAutomatico() {
+      document.getElementById("reproducir").textContent = automaticoActivo
+        ? "Pausar automatico"
+        : "Continuar automatico";
+      document.getElementById("estadoAuto").textContent = automaticoActivo
+        ? "Cambio automatico activo"
+        : "Cambio automatico pausado";
+    }
+
+    document.getElementById("anterior").addEventListener("click", () => cambiarGrafica(-1));
+    document.getElementById("siguiente").addEventListener("click", () => cambiarGrafica(1));
+    document.getElementById("reproducir").addEventListener("click", () => {
+      automaticoActivo = !automaticoActivo;
+      if (automaticoActivo) {
+        iniciarAutomatico();
+      } else {
+        detenerAutomatico();
+      }
+      actualizarEstadoAutomatico();
+    });
+
+    mostrarGrafica(clave, false);
+    iniciarAutomatico();
+    actualizarEstadoAutomatico();
+  </script>
+</body>
+</html>

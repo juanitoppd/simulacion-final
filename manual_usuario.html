@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual de Usuario - Simulacion TechClassUC</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6fa;
+      --panel: #ffffff;
+      --text: #1d2735;
+      --muted: #667387;
+      --line: #dce3ec;
+      --blue: #1d6ee8;
+      --blue-soft: #e8f1ff;
+      --code: #eef2f7;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(rgba(244, 246, 250, 0.56), rgba(244, 246, 250, 0.64)),
+        url("Luffy.jpeg");
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: var(--text);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
+      gap: 24px;
+      width: min(1180px, calc(100% - 32px));
+      margin: 22px auto 44px;
+      align-items: start;
+    }
+
+    aside,
+    article {
+      background: rgba(255, 255, 255, 0.46);
+      border: 1px solid rgba(255, 255, 255, 0.66);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(29, 39, 53, 0.06);
+      backdrop-filter: blur(10px);
+    }
+
+    aside {
+      position: sticky;
+      top: 18px;
+      padding: 18px;
+    }
+
+    article {
+      padding: clamp(24px, 5vw, 44px);
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--blue);
+      font-size: clamp(34px, 7vw, 56px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 36px 0 12px;
+      color: var(--blue);
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    p,
+    li {
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ol,
+    ul {
+      padding-left: 22px;
+      margin: 8px 0 18px;
+    }
+
+    a {
+      color: var(--blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 24px 0;
+    }
+
+    .meta {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .meta p {
+      margin: 0 0 6px;
+      font-weight: 700;
+    }
+
+    .meta span {
+      font-weight: 400;
+    }
+
+    .toc-title {
+      margin: 0 0 12px;
+      color: var(--blue);
+      font-size: 22px;
+    }
+
+    .toc {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .toc li {
+      margin: 8px 0;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--blue);
+      background: var(--blue);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .button-link.secondary {
+      background: var(--panel);
+      color: var(--blue);
+    }
+
+    .button-link:hover {
+      text-decoration: none;
+    }
+
+    code {
+      display: block;
+      overflow-x: auto;
+      padding: 12px;
+      border-radius: 6px;
+      background: var(--code);
+      color: #182230;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre;
+    }
+
+    .note {
+      padding: 14px;
+      border-left: 4px solid var(--blue);
+      border-radius: 6px;
+      background: var(--blue-soft);
+      color: var(--text);
+    }
+
+    .figure-link {
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 820px) {
+      .layout {
+        grid-template-columns: 1fr;
+        width: min(100% - 24px, 520px);
+        margin-top: 12px;
+      }
+
+      aside {
+        position: static;
+        order: -1;
+      }
+
+      article {
+        padding: 28px 22px;
+      }
+
+      h1 {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <aside>
+      <h2 class="toc-title">Tabla de Contenidos</h2>
+      <ol class="toc">
+        <li><a href="#requisitos">Requisitos</a></li>
+        <li><a href="#instalacion">Instalacion y primer arranque</a></li>
+        <li><a href="#ejecucion">Ejecutar la simulacion</a></li>
+        <li><a href="#vista">Usar la vista web</a></li>
+        <li><a href="#graficas">Interpretar las graficas</a></li>
+        <li><a href="#parametros">Parametros principales</a></li>
+        <li><a href="#errores">Solucion de problemas</a></li>
+        <li><a href="#subida">Subir el proyecto a Git</a></li>
+      </ol>
+    </aside>
+
+    <article id="inicio">
+      <nav class="nav" aria-label="Navegacion">
+        <a class="button-link" href="vista_resultados.html">Ver resultados</a>
+        <a class="button-link secondary" href="#requisitos">Inicio del manual</a>
+      </nav>
+
+      <h1>Manual de Usuario - Simulacion TechClassUC</h1>
+
+      <div class="meta">
+        <p>Version: <span>1.0</span></p>
+        <p>Audiencia: <span>Estudiantes de simulacion y modelos de colas</span></p>
+        <p>Requisito previo: <span>Python instalado y terminal PowerShell</span></p>
+      </div>
+
+      <hr class="divider">
+
+      <section id="requisitos">
+        <h2>1. Requisitos</h2>
+        <ul>
+          <li>Python instalado en Windows.</li>
+          <li>PowerShell abierto en la carpeta del proyecto.</li>
+          <li>Dependencias del archivo <strong>requirements.txt</strong>.</li>
+          <li>Navegador web para abrir la vista de resultados.</li>
+        </ul>
+      </section>
+
+      <section id="instalacion">
+        <h2>2. Instalacion y primer arranque</h2>
+        <p>Ubicate en la carpeta del proyecto:</p>
+        <code>cd "C:\Users\JUAN CAMILO\Downloads\simulacion final"</code>
+        <p>Instala las librerias necesarias:</p>
+        <code>py -m pip install -r requirements.txt</code>
+      </section>
+
+      <section id="ejecucion">
+        <h2>3. Ejecutar la simulacion</h2>
+        <p>Para correr el programa con los valores por defecto:</p>
+        <code>py main.py</code>
+        <p>Para hacer una prueba rapida:</p>
+        <code>py main.py --replicas 3 --replicas-sensibilidad 2 --tiempo 120 --warmup 10 --salida resultados_prueba_terminal</code>
+        <p class="note">La ejecucion genera imagenes PNG y un archivo CSV con los resultados de sensibilidad.</p>
+      </section>
+
+      <section id="vista">
+        <h2>4. Usar la vista web</h2>
+        <p>Abre la pagina local de resultados:</p>
+        <code>vista_resultados.html</code>
+        <p>Desde esa vista puedes revisar las graficas y entrar a este manual usando el boton superior.</p>
+        <a class="figure-link" href="vista_resultados.html">Ir a la vista de resultados</a>
+      </section>
+
+      <section id="graficas">
+        <h2>5. Interpretar las graficas</h2>
+        <h3>Evolucion del sistema</h3>
+        <p>Muestra como cambia el numero de clientes en el sistema y en cola durante el tiempo simulado.</p>
+
+        <h3>Histograma de esperas</h3>
+        <p>Resume la frecuencia de los tiempos de espera antes de recibir atencion.</p>
+
+        <h3>Wq vs tecnicos</h3>
+        <p>Compara el tiempo promedio de espera al cambiar la cantidad de tecnicos disponibles.</p>
+
+        <h3>Rho vs lambda</h3>
+        <p>Permite revisar el nivel de utilizacion del sistema frente a distintas tasas de llegada.</p>
+
+        <h3>Heatmap Wq</h3>
+        <p>Ayuda a identificar combinaciones de tasa de llegada y numero de tecnicos con menor espera.</p>
+      </section>
+
+      <section id="parametros">
+        <h2>6. Parametros principales</h2>
+        <ul>
+          <li><strong>--lambda-llegadas:</strong> clientes que llegan por hora.</li>
+          <li><strong>--mu-servicio:</strong> clientes atendidos por hora por cada tecnico.</li>
+          <li><strong>--servidores:</strong> cantidad de tecnicos disponibles.</li>
+          <li><strong>--replicas:</strong> cantidad de repeticiones Montecarlo.</li>
+          <li><strong>--salida:</strong> carpeta donde se guardan los resultados.</li>
+        </ul>
+      </section>
+
+      <section id="errores">
+        <h2>7. Solucion de problemas</h2>
+        <h3>No aparecen las graficas</h3>
+        <p>Ejecuta nuevamente la simulacion y verifica que exista la carpeta <strong>resultados_prueba_terminal</strong>.</p>
+
+        <h3>Falta una libreria</h3>
+        <p>Instala dependencias otra vez:</p>
+        <code>py -m pip install -r requirements.txt</code>
+
+        <h3>El sistema queda inestable</h3>
+        <p>Aumenta el numero de tecnicos o reduce la tasa de llegada para que la utilizacion sea menor que 1.</p>
+      </section>
+
+      <section id="subida">
+        <h2>8. Subir el proyecto a Git</h2>
+        <p>Despues de crear el repositorio remoto, agrega los archivos y realiza el commit:</p>
+        <code>git add .
+git commit -m "Agregar simulacion TechClassUC"</code>
+        <p>Conecta el remoto y sube la rama principal:</p>
+        <code>git remote add origin URL_DEL_REPOSITORIO
+git branch -M main
+git push -u origin main</code>
+      </section>
+    </article>
+  </main>
+
+</body>
+</html>

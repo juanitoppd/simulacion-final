@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resultados simulacion TechClassUC</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #637083;
+      --line: #d8dee8;
+      --accent: #0f766e;
+      --accent-soft: #d9f3ef;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(rgba(5, 9, 16, 0.42), rgba(5, 9, 16, 0.5)),
+        url("Luffy.jpeg");
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: var(--text);
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.62);
+      border-bottom: 1px solid var(--line);
+      padding: 22px clamp(16px, 4vw, 48px);
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .nav-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .button-link.secondary {
+      background: var(--panel);
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(24px, 4vw, 38px);
+      line-height: 1.1;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto 40px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .metric {
+      background: rgba(255, 255, 255, 0.36);
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: 8px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    figure {
+      margin: 0;
+      background: rgba(255, 255, 255, 0.34);
+      border: 1px solid rgba(255, 255, 255, 0.64);
+      border-radius: 8px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    figure > a {
+      display: block;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    figcaption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.64);
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .button-link:hover {
+      text-decoration: none;
+    }
+
+    .csv {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.36);
+      border: 1px solid rgba(255, 255, 255, 0.64);
+      border-radius: 8px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .csv a {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Resultados simulacion TechClassUC</h1>
+        <p>Vista local para revisar las graficas generadas por el programa.</p>
+      </div>
+      <nav class="nav-actions" aria-label="Navegacion principal">
+        <a class="button-link" href="manual_usuario.html">Manual</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary" aria-label="Resumen de salida">
+      <div class="metric">
+        <strong>Carpeta usada</strong>
+        <span>resultados_prueba_terminal</span>
+      </div>
+      <div class="metric">
+        <strong>Graficas</strong>
+        <span>6</span>
+      </div>
+      <div class="metric">
+        <strong>Datos CSV</strong>
+        <span>1</span>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Graficas de simulacion">
+      <figure>
+        <a href="visor_grafica.html?grafica=evolucion">
+          <img src="resultados_prueba_terminal/evolucion_sistema.png" alt="Evolucion temporal de clientes en el sistema">
+        </a>
+        <figcaption>
+          Evolucion del sistema
+          <a href="visor_grafica.html?grafica=evolucion">Abrir</a>
+        </figcaption>
+      </figure>
+
+      <figure>
+        <a href="visor_grafica.html?grafica=histograma">
+          <img src="resultados_prueba_terminal/histograma_esperas.png" alt="Histograma de tiempos de espera">
+        </a>
+        <figcaption>
+          Histograma de esperas
+          <a href="visor_grafica.html?grafica=histograma">Abrir</a>
+        </figcaption>
+      </figure>
+
+      <figure>
+        <a href="visor_grafica.html?grafica=wq">
+          <img src="resultados_prueba_terminal/wq_vs_servidores.png" alt="Tiempo promedio de espera contra numero de tecnicos">
+        </a>
+        <figcaption>
+          Wq vs tecnicos
+          <a href="visor_grafica.html?grafica=wq">Abrir</a>
+        </figcaption>
+      </figure>
+
+      <figure>
+        <a href="visor_grafica.html?grafica=rho">
+          <img src="resultados_prueba_terminal/rho_vs_lambda.png" alt="Factor de utilizacion contra tasa de llegada">
+        </a>
+        <figcaption>
+          Rho vs lambda
+          <a href="visor_grafica.html?grafica=rho">Abrir</a>
+        </figcaption>
+      </figure>
+
+      <figure>
+        <a href="visor_grafica.html?grafica=distribucion">
+          <img src="resultados_prueba_terminal/distribucion_medias_wq.png" alt="Distribucion de medias de Wq entre replicas">
+        </a>
+        <figcaption>
+          Distribucion Wq
+          <a href="visor_grafica.html?grafica=distribucion">Abrir</a>
+        </figcaption>
+      </figure>
+
+      <figure>
+        <a href="visor_grafica.html?grafica=heatmap">
+          <img src="resultados_prueba_terminal/heatmap_wq.png" alt="Heatmap de Wq por lambda y tecnicos">
+        </a>
+        <figcaption>
+          Heatmap Wq
+          <a href="visor_grafica.html?grafica=heatmap">Abrir</a>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="csv">
+      <strong>Archivo de sensibilidad</strong>
+      <p>Los datos completos estan en el CSV generado por la simulacion.</p>
+      <a href="resultados_prueba_terminal/sensibilidad.csv" target="_blank">Abrir sensibilidad.csv</a>
+    </section>
+  </main>
+</body>
+</html>
