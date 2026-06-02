@@ -18,6 +18,14 @@ def _parsear_lista_floats(texto: str) -> list[float]:
     return [float(x.strip()) for x in texto.split(",") if x.strip()]
 
 
+def _asegurar_lambda_base(lambdas: list[float], lambda_base: float) -> list[float]:
+    """Incluye la lambda principal para que sensibilidad y recomendacion respondan."""
+
+    if lambda_base not in lambdas:
+        lambdas.append(lambda_base)
+    return sorted(lambdas)
+
+
 def _imprimir_resumen(resumen: dict, teorico: dict, comparacion: list[dict]) -> None:
     print("\n=== Resumen Montecarlo ===")
     print(f"Replicas: {resumen['parametros']['n']}")
@@ -232,7 +240,9 @@ def main() -> None:
     teorico = metricas_mm_c(args.lambda_llegadas, args.mu_servicio, args.servidores)
     comparacion = comparar_con_simulacion(resumen, teorico)
 
-    lambdas = _parsear_lista_floats(args.lambdas_sensibilidad)
+    lambdas = _asegurar_lambda_base(
+        _parsear_lista_floats(args.lambdas_sensibilidad), args.lambda_llegadas
+    )
     servidores_lista = list(range(args.c_min, args.c_max + 1))
     resultados_sensibilidad = barrido_sensibilidad(
         lambdas_hora=lambdas,

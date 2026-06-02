@@ -100,7 +100,7 @@ def _atender_cliente(
     rng: random.Random,
     mu_hora: float,
     clientes_registrados: list[Cliente],
-) -> simpy.events.Event:
+) -> simpy.events.Event: # type: ignore
     req = recurso.request()
     monitor.registrar_estado(recurso)
     yield req
@@ -131,7 +131,7 @@ def _generar_llegadas(
     clientes_registrados: list[Cliente],
     clientes_generados: list[Cliente],
     llegadas_generadas: list[dict],
-) -> simpy.events.Event:
+) -> simpy.events.Event: # type: ignore
     id_cliente = 0
     tasa_llegada_minuto = lambda_hora / 60.0
     llegada_anterior = 0.0
