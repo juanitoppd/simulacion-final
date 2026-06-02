@@ -162,9 +162,11 @@ def _ejecutar_simulacion(parametros: dict) -> dict:
         umbral_wq=parametros["umbral_wq"],
     )
     return {
+        "parametros": parametros,
         "resumen": resumen,
         "teorico": teorico,
         "comparacion": comparacion,
+        "sensibilidad": sensibilidad,
         "recomendacion": recomendacion,
         "timestamp": int(time.time()),
     }
@@ -179,32 +181,68 @@ def _input(nombre: str, etiqueta: str, valores: dict[str, str], tipo: str = "num
     )
 
 
+def _numero_tabla(valor: float | None) -> str:
+    return "-" if valor is None else f"{valor:.4f}"
+
+
 def _render_pagina(
     valores: dict[str, str],
     resultado: dict | None = None,
     error: str | None = None,
 ) -> bytes:
     metricas_html = ""
+    intervalos_html = ""
     comparacion_html = ""
+    sensibilidad_html = ""
     recomendacion_html = ""
+    parametros_html = ""
     graficas_html = ""
     cache = int(time.time()) if resultado is None else resultado["timestamp"]
 
     if resultado:
+        parametros = resultado["parametros"]
         resumen = resultado["resumen"]
         teorico = resultado["teorico"]
         metricas = resumen["metricas"]
         principales = [
+            ("Clientes atendidos", metricas["clientes_atendidos"]["media"], ""),
             ("Wq promedio", metricas["tiempo_espera_promedio"]["media"], "min"),
             ("Tiempo en sistema", metricas["tiempo_sistema_promedio"]["media"], "min"),
             ("Lq", metricas["Lq"]["media"], "clientes"),
             ("L", metricas["L"]["media"], "clientes"),
             ("Rho simulado", metricas["rho"]["media"], ""),
             ("Rho teorico", teorico["rho"], ""),
+            ("P0 analitico", teorico["P0"], ""),
         ]
         metricas_html = "".join(
             f"<article><strong>{nombre}</strong><span>{valor:.3f} {unidad}</span></article>"
             for nombre, valor, unidad in principales
+        )
+        parametros_html = (
+            f"Clientes/hora={parametros['lambda_llegadas']:g}, "
+            f"servicio/hora={parametros['mu_servicio']:g}, "
+            f"tecnicos={parametros['servidores']}, "
+            f"tiempo={parametros['tiempo']:g} min, "
+            f"warm-up={parametros['warmup']:g} min, "
+            f"replicas={parametros['replicas']}."
+        )
+        metricas_intervalo = [
+            ("Clientes atendidos", "clientes_atendidos"),
+            ("Wq promedio", "tiempo_espera_promedio"),
+            ("Tiempo en sistema", "tiempo_sistema_promedio"),
+            ("Lq", "Lq"),
+            ("L", "L"),
+            ("Rho", "rho"),
+            ("Throughput/hora", "throughput_hora"),
+        ]
+        intervalos_html = "".join(
+            "<tr>"
+            f"<td>{nombre}</td>"
+            f"<td>{metricas[clave]['media']:.4f}</td>"
+            f"<td>{metricas[clave]['ic95_inf']:.4f} - {metricas[clave]['ic95_sup']:.4f}</td>"
+            f"<td>{metricas[clave]['n_minimo_error_5pct']}</td>"
+            "</tr>"
+            for nombre, clave in metricas_intervalo
         )
         comparacion_html = "".join(
             "<tr>"
@@ -214,6 +252,17 @@ def _render_pagina(
             f"<td>{fila['error_relativo_pct']:.2f}%</td>"
             "</tr>"
             for fila in resultado["comparacion"]
+        )
+        sensibilidad_html = "".join(
+            "<tr>"
+            f"<td>{fila['lambda_hora']:g}</td>"
+            f"<td>{fila['servidores']}</td>"
+            f"<td>{'Si' if fila['estable'] else 'No'}</td>"
+            f"<td>{fila['rho_teorico']:.4f}</td>"
+            f"<td>{_numero_tabla(fila['Wq_promedio'])}</td>"
+            f"<td>{_numero_tabla(fila['Lq_promedio'])}</td>"
+            "</tr>"
+            for fila in resultado["sensibilidad"]
         )
         recomendacion = resultado["recomendacion"]
         if recomendacion:
@@ -243,8 +292,21 @@ def _render_pagina(
           {metricas_html}
         </section>
         <section class="panel">
+          <h2>Parametros usados</h2>
+          <p>{parametros_html}</p>
+        </section>
+        <section class="panel">
           <h2>Recomendacion</h2>
           <p>{recomendacion_html}</p>
+        </section>
+        <section class="panel table-panel">
+          <h2>Montecarlo e intervalos de confianza</h2>
+          <table>
+            <thead>
+              <tr><th>Metrica</th><th>Media</th><th>IC 95%</th><th>Replicas para error 5%</th></tr>
+            </thead>
+            <tbody>{intervalos_html}</tbody>
+          </table>
         </section>
         <section class="panel table-panel">
           <h2>Comparacion simulacion vs analitico</h2>
@@ -253,6 +315,15 @@ def _render_pagina(
               <tr><th>Metrica</th><th>Simulacion</th><th>Analitico</th><th>Error</th></tr>
             </thead>
             <tbody>{comparacion_html}</tbody>
+          </table>
+        </section>
+        <section class="panel table-panel">
+          <h2>Tabla de sensibilidad</h2>
+          <table>
+            <thead>
+              <tr><th>Clientes/hora</th><th>Tecnicos</th><th>Estable</th><th>Rho teorico</th><th>Wq promedio</th><th>Lq promedio</th></tr>
+            </thead>
+            <tbody>{sensibilidad_html}</tbody>
           </table>
         </section>
         """
@@ -333,7 +404,8 @@ def _render_pagina(
     figure {{ margin: 0; overflow: hidden; }}
     img {{ display: block; width: 100%; height: auto; background: #fff; }}
     figcaption {{ padding: 11px 13px; border-top: 1px solid var(--line); font-weight: 700; }}
-    table {{ width: 100%; border-collapse: collapse; font-size: 14px; }}
+    .table-panel {{ overflow-x: auto; }}
+    table {{ width: 100%; border-collapse: collapse; font-size: 14px; min-width: 620px; }}
     th, td {{ padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; }}
     th {{ color: var(--muted); }}
     .links {{ display: flex; flex-wrap: wrap; gap: 10px; }}
@@ -348,15 +420,15 @@ def _render_pagina(
 <body>
   <header>
     <h1>Simulacion TechClassUC</h1>
-    <p>Ingresa los datos, ejecuta la simulacion y las metricas/graficas cambian con esos valores.</p>
+    <p>Ingresa los clientes por hora, capacidad y escenarios; al ejecutar, las metricas y graficas cambian con esos valores.</p>
   </header>
   <main>
     {aviso_error}
     <div class="layout">
       <form method="post" action="/simular">
         <h2>Datos de entrada</h2>
-        {_input("lambda_llegadas", "Lambda llegadas (clientes/hora)", valores)}
-        {_input("mu_servicio", "Mu servicio (clientes/hora por tecnico)", valores)}
+        {_input("lambda_llegadas", "Ingreso de clientes (clientes/hora)", valores)}
+        {_input("mu_servicio", "Atencion por tecnico (clientes/hora)", valores)}
         {_input("servidores", "Tecnicos actuales", valores)}
         {_input("tiempo", "Tiempo simulado (minutos)", valores)}
         {_input("warmup", "Warm-up (minutos)", valores)}
