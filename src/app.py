@@ -4,16 +4,19 @@ import html
 import os
 import sys
 import time
-from http.server import SimpleHTTPRequestHandler
 from pathlib import Path
-from socketserver import TCPServer
 from urllib.parse import parse_qs
-from urllib.parse import urlparse
+
+from flask import Flask
+from flask import Response
+from flask import request
+from flask import send_from_directory
 
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "assets"
 PORT = int(os.environ.get("PORT", "8000"))
+app = Flask(__name__)
 
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -461,46 +464,48 @@ def _render_pagina(
     return pagina.encode("utf-8")
 
 
-class Handler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(ROOT), **kwargs)
+def _html_response(contenido: bytes) -> Response:
+    return Response(contenido, mimetype="text/html; charset=utf-8")
 
-    def do_GET(self) -> None:
-        ruta = urlparse(self.path).path
-        if ruta in ("/", "/index.html", "/vista_resultados.html", "/visor_grafica.html"):
-            self._enviar_html(_render_pagina(_form_values(None)))
-            return
-        super().do_GET()
 
-    def do_POST(self) -> None:
-        if self.path != "/simular":
-            self.send_error(404)
-            return
+@app.get("/")
+@app.get("/index.html")
+@app.get("/vista_resultados.html")
+@app.get("/visor_grafica.html")
+def inicio() -> Response:
+    return _html_response(_render_pagina(_form_values(None)))
 
-        longitud = int(self.headers.get("Content-Length", "0"))
-        cuerpo = self.rfile.read(longitud).decode("utf-8")
-        datos = parse_qs(cuerpo)
-        try:
-            parametros = _parametros_desde_formulario(datos)
-            resultado = _ejecutar_simulacion(parametros)
-            pagina = _render_pagina(_form_values(parametros), resultado=resultado)
-        except Exception as exc:  # noqa: BLE001
-            pagina = _render_pagina(
-                {**VALORES_DEFECTO, **{k: v[0] for k, v in datos.items()}},
-                error=str(exc),
-            )
-        self._enviar_html(pagina)
 
-    def _enviar_html(self, contenido: bytes) -> None:
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(contenido)))
-        self.end_headers()
-        self.wfile.write(contenido)
+@app.post("/simular")
+def simular() -> Response:
+    cuerpo = request.get_data(as_text=True)
+    datos = parse_qs(cuerpo)
+    try:
+        parametros = _parametros_desde_formulario(datos)
+        resultado = _ejecutar_simulacion(parametros)
+        pagina = _render_pagina(_form_values(parametros), resultado=resultado)
+    except Exception as exc:  # noqa: BLE001
+        pagina = _render_pagina(
+            {**VALORES_DEFECTO, **{k: v[0] for k, v in datos.items()}},
+            error=str(exc),
+        )
+    return _html_response(pagina)
+
+
+@app.get("/assets/<path:filename>")
+def assets(filename: str):
+    return send_from_directory(ASSETS, filename)
+
+
+@app.get("/manual_usuario.html")
+def manual_usuario():
+    return send_from_directory(ROOT, "manual_usuario.html")
+
+
+@app.get("/Luffy.jpeg")
+def fondo():
+    return send_from_directory(ROOT, "Luffy.jpeg")
 
 
 if __name__ == "__main__":
-    TCPServer.allow_reuse_address = True
-    with TCPServer(("0.0.0.0", PORT), Handler) as httpd:
-        print(f"Serving {ROOT} on port {PORT}")
-        httpd.serve_forever()
+    app.run(host="0.0.0.0", port=PORT)
