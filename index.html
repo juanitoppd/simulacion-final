@@ -4,10 +4,189 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Simulacion TechClassUC</title>
+  <style>
+    :root {
+      --bg: #eef2f6;
+      --panel: rgba(255, 255, 255, 0.92);
+      --text: #17202a;
+      --muted: #5f6b7a;
+      --line: #d7dde5;
+      --accent: #0f766e;
+      --accent-dark: #0b5f59;
+      --warn: #92400e;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(rgba(6, 15, 24, 0.42), rgba(6, 15, 24, 0.54)), url("Luffy.jpeg");
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: var(--text);
+    }
+    header {
+      padding: 24px clamp(16px, 4vw, 46px);
+      background: rgba(255,255,255,0.78);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 42px); }
+    h2 { margin: 0 0 14px; font-size: 20px; }
+    p { margin: 0; color: var(--muted); line-height: 1.5; }
+    main { width: min(1180px, calc(100% - 32px)); margin: 22px auto 44px; }
+    .notice, .panel, .metric, figure {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.72);
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(18, 28, 38, 0.08);
+    }
+    .notice {
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .metric { padding: 14px; }
+    .metric strong {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+    .metric span {
+      color: var(--accent);
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .panel { padding: 16px; margin-bottom: 18px; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .button:hover { background: var(--accent-dark); }
+    .ghost {
+      background: #fff;
+      color: var(--accent);
+      border: 1px solid var(--line);
+    }
+    .ghost:hover { background: #f8fafc; }
+    .graphs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    figure { margin: 0; overflow: hidden; }
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #fff;
+    }
+    figcaption {
+      padding: 11px 13px;
+      border-top: 1px solid var(--line);
+      font-weight: 700;
+    }
+    ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.55; }
+    @media (max-width: 850px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Simulacion TechClassUC</h1>
-  <p>Para modificar los datos y regenerar las graficas, abre el servidor web del proyecto.</p>
-  <p><a href="http://localhost:8000/">Abrir formulario local</a></p>
+  <header>
+    <h1>Simulacion TechClassUC</h1>
+    <p>Modelo M/M/c para analizar llegada de clientes, capacidad de tecnicos, tiempos de espera y escenarios de sensibilidad.</p>
+  </header>
+
+  <main>
+    <div class="notice">
+      Proyecto desplegado en Render. Esta vista publica muestra los resultados y graficas generadas por la simulacion.
+    </div>
+
+    <section class="metrics" aria-label="Metricas principales">
+      <article class="metric"><strong>Clientes por hora</strong><span>10</span></article>
+      <article class="metric"><strong>Atencion por tecnico</strong><span>4/h</span></article>
+      <article class="metric"><strong>Tecnicos evaluados</strong><span>3</span></article>
+      <article class="metric"><strong>Wq promedio</strong><span>12.017 min</span></article>
+      <article class="metric"><strong>Rho simulado</strong><span>0.780</span></article>
+      <article class="metric"><strong>Recomendacion</strong><span>4 tecnicos</span></article>
+    </section>
+
+    <div class="grid">
+      <aside>
+        <section class="panel">
+          <h2>Resumen</h2>
+          <p>La simulacion ejecuta replicas Montecarlo, compara contra el modelo analitico M/M/c y genera graficas para revisar colas, utilizacion y sensibilidad.</p>
+          <div class="links">
+            <a class="button" href="assets/sensibilidad.csv" target="_blank">Sensibilidad CSV</a>
+            <a class="button ghost" href="assets/llegadas_clientes.csv" target="_blank">Llegadas CSV</a>
+            <a class="button ghost" href="manual_usuario.html" target="_blank">Manual</a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Parametros base</h2>
+          <ul>
+            <li>Lambda: 10 clientes/hora.</li>
+            <li>Mu: 4 clientes/hora por tecnico.</li>
+            <li>Replicas Montecarlo: 30.</li>
+            <li>Jornada simulada: 480 minutos.</li>
+            <li>Warm-up: 60 minutos.</li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="graphs" aria-label="Graficas generadas">
+        <figure>
+          <a href="assets/evolucion_sistema.png" target="_blank"><img src="assets/evolucion_sistema.png" alt="Evolucion del sistema"></a>
+          <figcaption>Evolucion del sistema</figcaption>
+        </figure>
+        <figure>
+          <a href="assets/histograma_esperas.png" target="_blank"><img src="assets/histograma_esperas.png" alt="Histograma de esperas"></a>
+          <figcaption>Histograma de esperas</figcaption>
+        </figure>
+        <figure>
+          <a href="assets/wq_vs_servidores.png" target="_blank"><img src="assets/wq_vs_servidores.png" alt="Wq vs tecnicos"></a>
+          <figcaption>Wq vs tecnicos</figcaption>
+        </figure>
+        <figure>
+          <a href="assets/rho_vs_lambda.png" target="_blank"><img src="assets/rho_vs_lambda.png" alt="Rho vs lambda"></a>
+          <figcaption>Rho vs lambda</figcaption>
+        </figure>
+        <figure>
+          <a href="assets/distribucion_medias_wq.png" target="_blank"><img src="assets/distribucion_medias_wq.png" alt="Distribucion de medias Wq"></a>
+          <figcaption>Distribucion de medias Wq</figcaption>
+        </figure>
+        <figure>
+          <a href="assets/heatmap_wq.png" target="_blank"><img src="assets/heatmap_wq.png" alt="Heatmap Wq"></a>
+          <figcaption>Heatmap Wq</figcaption>
+        </figure>
+      </section>
+    </div>
+  </main>
 </body>
 </html>
