@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 import os
 import sys
 import time
@@ -8,6 +9,7 @@ from pathlib import Path
 
 from flask import Flask
 from flask import Response
+from flask import jsonify
 from flask import request
 from flask import send_from_directory
 
@@ -320,10 +322,103 @@ def _page(values: dict[str, str], result: dict | None = None, error: str | None 
     table {{ width: 100%; border-collapse: collapse; min-width: 560px; font-size: 14px; }}
     th, td {{ padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; }}
     th {{ color: var(--muted); }}
+    .loading {{ opacity: 0.6; pointer-events: none; }}
+    .status {{ font-size: 12px; color: var(--muted); margin-top: 8px; }}
+    .status.calculating {{ color: var(--accent); font-weight: 700; }}
     @media (max-width: 850px) {{
       .layout {{ grid-template-columns: 1fr; }}
       form {{ position: static; }}
     }}
+  </style>
+  <script>
+    let calcTimeout;
+    
+    async function calcular() {{
+      const form = document.getElementById('formulario');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      
+      const status = document.getElementById('status');
+      status.textContent = 'Calculando...';
+      status.classList.add('calculating');
+      
+      try {{
+        const response = await fetch('/api/calcular', {{
+          method: 'POST',
+          headers: {{'Content-Type': 'application/json'}},
+          body: JSON.stringify(data)
+        }});
+        
+        const result = await response.json();
+        
+        if (result.error) {{
+          status.textContent = '❌ ' + result.error;
+          status.classList.remove('calculating');
+          return;
+        }}
+        
+        // Actualizar métricas
+        const metricas = document.querySelector('.metrics');
+        if (metricas && result.metricas) {{
+          let html = '';
+          for (const [nombre, valor] of Object.entries(result.metricas)) {{
+            html += `<article><strong>${{nombre}}</strong><span>${{valor}}</span></article>`;
+          }}
+          metricas.innerHTML = html;
+        }}
+        
+        // Actualizar tabla de comparación
+        if (result.comparacion) {{
+          const tbody = document.querySelector('table tbody');
+          if (tbody) {{
+            let html = '';
+            for (const row of result.comparacion) {{
+              html += `
+                <tr>
+                  <td>${{row.metrica}}</td>
+                  <td>${{row.simulacion.toFixed(4)}}</td>
+                  <td>${{row.analitico.toFixed(4)}}</td>
+                  <td>${{{row.error_relativo_pct.toFixed(2)}}}%</td>
+                </tr>
+              `;
+            }}
+            tbody.innerHTML = html;
+          }}
+        }}
+        
+        // Actualizar recomendación
+        if (result.recomendacion) {{
+          const panel = document.querySelector('.panel h2');
+          if (panel && panel.textContent.includes('Recomendacion')) {{
+            const rec = result.recomendacion;
+            const texto = rec.servidores 
+              ? `Minimo recomendado: ${{rec.servidores}} tecnicos con Wq=${{rec.Wq_promedio.toFixed(2)}} min.`
+              : 'No se encontro una configuracion dentro del umbral definido.';
+            panel.nextElementSibling.textContent = texto;
+          }}
+        }}
+        
+        status.textContent = '✓ Cálculo completado';
+        status.classList.remove('calculating');
+      }} catch (error) {{
+        status.textContent = '❌ Error: ' + error.message;
+        status.classList.remove('calculating');
+      }}
+    }}
+    
+    function onInputChange() {{
+      clearTimeout(calcTimeout);
+      calcTimeout = setTimeout(calcular, 1000);
+    }}
+    
+    document.addEventListener('DOMContentLoaded', () => {{
+      const inputs = document.querySelectorAll('form input');
+      inputs.forEach(input => {{
+        input.addEventListener('change', onInputChange);
+        input.addEventListener('input', onInputChange);
+      }});
+    }});
+  </script>
   </style>
 </head>
 <body>
@@ -335,7 +430,7 @@ def _page(values: dict[str, str], result: dict | None = None, error: str | None 
     {error_html}
     <section class="metrics" aria-label="Metricas principales">{_metrics(result)}</section>
     <div class="layout">
-      <form method="post" action="/simular">
+      <form id="formulario">
         <h2>Datos de entrada</h2>
         {_input("lambda_llegadas", "Clientes por hora", values)}
         {_input("mu_servicio", "Atencion por tecnico/hora", values)}
@@ -349,7 +444,8 @@ def _page(values: dict[str, str], result: dict | None = None, error: str | None 
         {_input("replicas_sensibilidad", "Replicas sensibilidad", values)}
         {_input("umbral_wq", "Umbral Wq (min)", values)}
         <input name="semilla" type="hidden" value="{html.escape(values['semilla'])}">
-        <button type="submit">Ejecutar simulacion</button>
+        <button type="button" onclick="calcular()">Calcular resultados</button>
+        <div class="status" id="status">Listo para calcular</div>
         <div class="links">
           <a href="/assets/sensibilidad.csv" target="_blank">Sensibilidad CSV</a>
           <a href="/assets/llegadas_clientes.csv" target="_blank">Llegadas CSV</a>
@@ -370,12 +466,60 @@ def _html(content: str) -> Response:
     return Response(content, mimetype="text/html; charset=utf-8")
 
 
+def _result_json(result: dict | None, error: str | None = None) -> dict:
+    """Convierte resultados a JSON para la API."""
+    if error:
+        return {"error": error}
+    if result is None:
+        return {
+            "metricas": {
+                "Clientes atendidos": DEFAULTS["lambda_llegadas"],
+                "Wq promedio": "0.00 min",
+                "Tiempo en sistema": "0.00 min",
+                "Rho": "0.000",
+                "Lq": "0.00",
+                "Recomendacion": "Ejecutar simulacion",
+            }
+        }
+    m = result["resumen"]["metricas"]
+    rec = result["recomendacion"]
+    return {
+        "metricas": {
+            "Clientes atendidos": f"{m['clientes_atendidos']['media']:.1f}",
+            "Wq promedio": f"{m['tiempo_espera_promedio']['media']:.2f} min",
+            "Tiempo en sistema": f"{m['tiempo_sistema_promedio']['media']:.2f} min",
+            "Rho": f"{m['rho']['media']:.3f}",
+            "Lq": f"{m['Lq']['media']:.2f}",
+            "Recomendacion": f"{rec['servidores']} tecnicos" if rec else "Sin umbral",
+        },
+        "comparacion": result["comparacion"],
+        "recomendacion": result["recomendacion"],
+        "timestamp": result["timestamp"],
+    }
+
+
 @app.get("/")
 @app.get("/index.html")
 @app.get("/vista_resultados.html")
 @app.get("/visor_grafica.html")
 def home() -> Response:
     return _html(_page(_values()))
+
+
+@app.post("/api/calcular")
+def api_calcular() -> Response:
+    """Endpoint API para calcular resultados. Aceptа JSON o form data."""
+    if request.is_json:
+        form = request.get_json()
+    else:
+        form = request.form.to_dict(flat=True)
+    
+    try:
+        params = _params(form)
+        result = _run(params)
+        return jsonify(_result_json(result))
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": str(exc)}), 400
 
 
 @app.post("/simular")
