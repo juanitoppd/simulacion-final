@@ -96,7 +96,7 @@ $body = @{
         runtime = "python"
         plan = "free"
         buildCommand = "pip install -r requirements.txt && python main.py --salida assets"
-        startCommand = "gunicorn src.app:app"
+        startCommand = "gunicorn app:app"
         env = "python"
     }
 }
