@@ -8,6 +8,7 @@ from http.server import SimpleHTTPRequestHandler
 from pathlib import Path
 from socketserver import TCPServer
 from urllib.parse import parse_qs
+from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -465,7 +466,8 @@ class Handler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
     def do_GET(self) -> None:
-        if self.path in ("/", "/index.html"):
+        ruta = urlparse(self.path).path
+        if ruta in ("/", "/index.html", "/vista_resultados.html", "/visor_grafica.html"):
             self._enviar_html(_render_pagina(_form_values(None)))
             return
         super().do_GET()
