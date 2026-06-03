@@ -7,5 +7,5 @@ services:
     # la simulación que puede agotar tiempo/recursos. Los assets deben
     # generarse localmente y versionarse, o generarse en un job separado.
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn render_app:app
     autoDeploy: true
