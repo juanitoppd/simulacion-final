@@ -3,6 +3,9 @@ services:
     name: simulacion-techclassuc
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python main.py --salida assets
+    # Sólo instalar dependencias en la fase de build para evitar ejecutar
+    # la simulación que puede agotar tiempo/recursos. Los assets deben
+    # generarse localmente y versionarse, o generarse en un job separado.
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     autoDeploy: true
