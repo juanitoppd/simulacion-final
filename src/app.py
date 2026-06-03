@@ -440,7 +440,7 @@ def _render_pagina(
         {_input("c_max", "Tecnicos maximo sensibilidad", valores)}
         {_input("replicas_sensibilidad", "Replicas sensibilidad", valores)}
         {_input("umbral_wq", "Umbral Wq recomendado (min)", valores)}
-        <button type="submit">Ejecutar simulacion</button>
+        <button type="submit">Generar nuevas graficas</button>
         <div class="links">
           <a href="/assets/sensibilidad.csv" target="_blank">sensibilidad.csv</a>
           <a href="/assets/llegadas_clientes.csv" target="_blank">llegadas_clientes.csv</a>
