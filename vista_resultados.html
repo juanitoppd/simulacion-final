@@ -4,15 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Modificar graficas - TechClassUC</title>
+  <meta id="redirect-web" http-equiv="refresh" content="1; url=/">
   <script>
     if (window.location.protocol !== "file:") {
       window.location.replace("/");
+    } else {
+      document.getElementById("redirect-web").remove();
     }
   </script>
 </head>
 <body>
   <h1>Modificar graficas TechClassUC</h1>
   <p>Las graficas se modifican desde el formulario web, cambiando los datos de entrada y ejecutando la simulacion.</p>
+  <p><a href="/">Entrar al formulario web</a></p>
   <p><a href="http://localhost:8000/">Abrir formulario local</a></p>
 </body>
 </html>

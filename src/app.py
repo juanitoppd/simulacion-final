@@ -500,6 +500,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    TCPServer.allow_reuse_address = True
     with TCPServer(("0.0.0.0", PORT), Handler) as httpd:
         print(f"Serving {ROOT} on port {PORT}")
         httpd.serve_forever()
